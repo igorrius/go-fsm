@@ -1,29 +1,4 @@
-# go-fsm
-Finite State Machine in Go (with Blackjack and... using context)
-
-Overview
-----------
-Finite State Machine is designed with alignment to
-[Erlang Finite State Machine](http://erlang.org/documentation/doc-4.8.2/doc/design_principles/fsm.html) principles 
-and inspired by https://github.com/dyrkin/fsm solution. But has a bit different approach which based on `context.Context`
-GO package. 
-
-A FSM can be described as a set of relations of the form:
-```
-State(S) x Event(E) -> Actions (A), State(S')
-```
-If we are in state S and the event E occurs, we should perform the actions A and make a transition to the state S'.
-
-Install
--------
-```
-go get -u github.com/igorrius/go-fsm
-```
-
-Example
---------
-```go
-package example
+package main
 
 import (
 	"context"
@@ -187,15 +162,3 @@ func main() {
 		log.Println("This will be an error:", err)
 	}
 }
-```
-
-Benchmark
----------
-```
-BenchmarkFsm_When/Transition_Permitted-8                                 	   22755	    112706 ns/op	     112 B/op	       5 allocs/op
-BenchmarkFsm_When/Transition_Denied-8                                   	 3991654	       300 ns/op	     128 B/op	       6 allocs/op
-BenchmarkFsm_When/Transition_with_post_transition_functions_run-8         	   21922	    116563 ns/op	     112 B/op	       5 allocs/op
-BenchmarkFsm_Close/Close_fsm_and_try_to_process_event-8                   	11097075	       103 ns/op	      32 B/op	       2 allocs/op
-```
--------------
-made with love in GO :)
