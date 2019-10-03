@@ -4,7 +4,7 @@ import "context"
 
 type (
 	ctxEventKey int
-	Event  = string
+	Event       = string
 )
 
 var eventCtxKey ctxEventKey

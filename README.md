@@ -23,7 +23,7 @@ go get -u github.com/igorrius/go-fsm
 Example
 --------
 ```go
-package example
+package main
 
 import (
 	"context"

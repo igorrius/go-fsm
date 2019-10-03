@@ -108,8 +108,8 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 		nextCtx = fsmCtx
 	}
 
-	// check fsm and event contexts for error after the action call
-	if err := checkErrors(fsm.ctx.Err(), eventCtx.Err()); err != nil {
+	// check fsm, nextFsm and event contexts for error after the action call
+	if err := checkErrors(eventCtx.Err(), fsmCtx.Err(), nextCtx.Err()); err != nil {
 		return err
 	}
 
