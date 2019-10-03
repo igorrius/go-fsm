@@ -27,17 +27,23 @@ func main() {
 	// create logger
 	logger := &Logger{}
 
-	// create a new instance of FSM
-	fsm, err := go_fsm.NewFsm().
-		SetLogger(logger).
+	// create a new instance of FSM,
+	// if a logger is not needed use constructor without a logger option e.g. fsm, err := go_fsm.NewFsm().
+	fsm, err := go_fsm.NewFsm(go_fsm.LoggerOption(logger)).
 		When(
 			stateIdle,
 			func(eventCtx go_fsm.EventContext, fsmCtx go_fsm.FsmContext) (next go_fsm.State, nextFsmCtx go_fsm.FsmContext, err error) {
+				var state go_fsm.State
+				var event go_fsm.Event
 				// get current state from eventCtx
-				event := go_fsm.EventFromCtx(eventCtx)
+				if event, err = go_fsm.EventFromCtx(eventCtx); err != nil {
+					return
+				}
 
 				// get current state from fsmContext
-				state := go_fsm.StateFromCtx(fsmCtx)
+				if state, err = go_fsm.StateFromCtx(fsmCtx); err != nil {
+					return
+				}
 
 				switch event {
 				case "moveRight":
@@ -63,11 +69,17 @@ func main() {
 		When(
 			stateInAction,
 			func(eventCtx go_fsm.EventContext, fsmCtx go_fsm.FsmContext) (next go_fsm.State, nextFsmCtx go_fsm.FsmContext, err error) {
+				var state go_fsm.State
+				var event go_fsm.Event
 				// get current state from eventCtx
-				event := go_fsm.EventFromCtx(eventCtx)
+				if event, err = go_fsm.EventFromCtx(eventCtx); err != nil {
+					return
+				}
 
-				// get current state from fsmContext it must been always but if not then function will return UnknownState constant
-				state := go_fsm.StateFromCtx(fsmCtx)
+				// get current state from fsmContext
+				if state, err = go_fsm.StateFromCtx(fsmCtx); err != nil {
+					return
+				}
 
 				switch event {
 				case "stop":

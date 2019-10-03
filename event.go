@@ -13,11 +13,11 @@ func ctxWithEvent(ctx context.Context, event Event) context.Context {
 	return context.WithValue(ctx, eventCtxKey, event)
 }
 
-func EventFromCtx(ctx context.Context) Event {
+func EventFromCtx(ctx context.Context) (Event, error) {
 	event, ok := ctx.Value(eventCtxKey).(Event)
 	if !ok {
-		panic("unknown event in context")
+		return "", ErrCanNotExtractEvent
 	}
 
-	return event
+	return event, nil
 }

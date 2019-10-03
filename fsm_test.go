@@ -3,6 +3,7 @@ package go_fsm
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"sync/atomic"
 	"testing"
 )
@@ -13,9 +14,30 @@ func emptyStateActionFunc(nextState State) ActionFunc {
 	}
 }
 
+type customLogger struct {
+}
+
+func (l customLogger) Log(v ...interface{}) {
+	log.Print(v...)
+}
+
+func (l customLogger) Logf(format string, v ...interface{}) {
+	log.Printf(format, v...)
+}
+
 func TestNewFsm(t *testing.T) {
-	fsm := NewFsm()
-	assert.NotNil(t, fsm)
+	t.Run("With default logger", func(t *testing.T) {
+		fsm := NewFsm()
+		assert.NotNil(t, fsm)
+		assert.Equal(t, &nilLoggerAdapter{}, fsm.logger)
+	})
+
+	t.Run("With the custom logger", func(t *testing.T) {
+		logger := &customLogger{}
+		fsm := NewFsm(LoggerOption(logger))
+		assert.NotNil(t, fsm)
+		assert.Equal(t, logger, fsm.logger)
+	})
 }
 
 func TestFsm_Init(t *testing.T) {
@@ -61,7 +83,8 @@ func TestFsm_When(t *testing.T) {
 				When(
 					"idle",
 					func(eventCtx EventContext, fsmCtx FsmContext) (next State, nextFsmCtx FsmContext, err error) {
-						event := EventFromCtx(eventCtx)
+						event, err := EventFromCtx(eventCtx)
+						assert.Nil(t, err)
 						assert.Equal(t, "someEvent", event)
 						return event, nil, nil
 					}).
@@ -144,7 +167,8 @@ func TestFsm_AddTransitionFunc(t *testing.T) {
 			"idle", "nextState",
 			func(from, to State, fsmCtx FsmContext) error {
 				atomic.AddInt32(&atomicCounter, 1)
-				state := StateFromCtx(fsmCtx)
+				state, err := StateFromCtx(fsmCtx)
+				assert.Nil(t, err)
 				assert.Equal(t, state, from)
 				assert.Equal(t, "idle", from)
 				assert.Equal(t, "nextState", to)
@@ -155,7 +179,8 @@ func TestFsm_AddTransitionFunc(t *testing.T) {
 			"idle", "nextState",
 			func(from, to State, fsmCtx FsmContext) error {
 				atomic.AddInt32(&atomicCounter, 1)
-				state := StateFromCtx(fsmCtx)
+				state, err := StateFromCtx(fsmCtx)
+				assert.Nil(t, err)
 				assert.Equal(t, state, from)
 				assert.Equal(t, "idle", from)
 				assert.Equal(t, "nextState", to)
@@ -166,7 +191,8 @@ func TestFsm_AddTransitionFunc(t *testing.T) {
 			"idle", "*",
 			func(from, to State, fsmCtx FsmContext) error {
 				atomic.AddInt32(&atomicCounter, 1)
-				state := StateFromCtx(fsmCtx)
+				state, err := StateFromCtx(fsmCtx)
+				assert.Nil(t, err)
 				assert.Equal(t, state, from)
 				assert.Equal(t, "idle", from)
 				assert.Equal(t, "nextState", to)
@@ -177,7 +203,8 @@ func TestFsm_AddTransitionFunc(t *testing.T) {
 			"*", "nextState",
 			func(from, to State, fsmCtx FsmContext) error {
 				atomic.AddInt32(&atomicCounter, 1)
-				state := StateFromCtx(fsmCtx)
+				state, err := StateFromCtx(fsmCtx)
+				assert.Nil(t, err)
 				assert.Equal(t, state, from)
 				assert.Equal(t, "idle", from)
 				assert.Equal(t, "nextState", to)
@@ -188,7 +215,8 @@ func TestFsm_AddTransitionFunc(t *testing.T) {
 			"*", "*",
 			func(from, to State, fsmCtx FsmContext) error {
 				atomic.AddInt32(&atomicCounter, 1)
-				state := StateFromCtx(fsmCtx)
+				state, err := StateFromCtx(fsmCtx)
+				assert.Nil(t, err)
 				assert.Equal(t, state, from)
 				assert.Equal(t, "idle", from)
 				assert.Equal(t, "nextState", to)

@@ -12,9 +12,16 @@ func Test_ctxWithState(t *testing.T) {
 }
 
 func Test_StateFromCtx(t *testing.T) {
-	t.Run("Valid context", func(t *testing.T) {
+	t.Run("Context with state", func(t *testing.T) {
 		ctx := ctxWithState(context.Background(), "idle")
-		state := StateFromCtx(ctx)
+		state, err := StateFromCtx(ctx)
+		assert.Nil(t, err)
 		assert.Equal(t, "idle", state)
+	})
+
+	t.Run("Context without state", func(t *testing.T) {
+		state, err := StateFromCtx(context.TODO())
+		assert.EqualError(t, err, ErrCanNotExtractState.Error())
+		assert.Equal(t, "", state)
 	})
 }

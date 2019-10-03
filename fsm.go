@@ -34,13 +34,18 @@ type Fsm struct {
 	ctxCancelFunc context.CancelFunc
 }
 
-//NewFsm create a new instance of FSM
-func NewFsm() *Fsm {
-	return &Fsm{
+// NewFsm create a new instance of FSM
+// if logger was not need should set it to nil
+func NewFsm(opts ...Option) *Fsm {
+	options := newOptions(opts...)
+
+	fsm := &Fsm{
 		actionMap:             map[State]ActionFunc{},
-		logger:                &nilLoggerAdapter{},
+		logger:                options.Logger,
 		postTransitionFuncMap: map[transitionKey][]TransitionFunc{},
 	}
+
+	return fsm
 }
 
 //InitWithState init FSM with initial state
@@ -58,12 +63,6 @@ func (fsm *Fsm) InitWithState(state State) (*Fsm, error) {
 func (fsm Fsm) isStateExists(state State) bool {
 	_, isset := fsm.actionMap[state]
 	return isset
-}
-
-//SetLogger - set logger engine
-func (fsm *Fsm) SetLogger(logger Logger) *Fsm {
-	fsm.logger = logger
-	return fsm
 }
 
 //CurrentState return FSM current state
@@ -103,7 +102,7 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 		return err
 	}
 
-	// check for empty next context
+	// set previous fsm context to next fsm context if nil has been returned by action handler (under the hood magic)
 	if nil == nextCtx {
 		nextCtx = fsmCtx
 	}
@@ -179,7 +178,6 @@ func (fsm *Fsm) RegisterPostTransitionFunc(fromState, toState State, fn Transiti
 
 func (fsm *Fsm) processTransitionFunctions(wg *sync.WaitGroup, nextState State, nextCtx FsmContext, transitionFunctions []TransitionFunc) {
 	wg.Add(len(transitionFunctions))
-	// create separate goroutine for each unordered transition function
 	for _, fn := range transitionFunctions {
 		go func(from, to State, ctx FsmContext, f TransitionFunc) {
 			if err := f(from, to, ctx); err != nil {

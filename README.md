@@ -52,17 +52,23 @@ func main() {
 	// create logger
 	logger := &Logger{}
 
-	// create a new instance of FSM
-	fsm, err := go_fsm.NewFsm().
-		SetLogger(logger).
+	// create a new instance of FSM,
+	// if a logger is not needed use constructor without a logger option e.g. fsm, err := go_fsm.NewFsm().
+	fsm, err := go_fsm.NewFsm(go_fsm.LoggerOption(logger)).
 		When(
 			stateIdle,
 			func(eventCtx go_fsm.EventContext, fsmCtx go_fsm.FsmContext) (next go_fsm.State, nextFsmCtx go_fsm.FsmContext, err error) {
+				var state go_fsm.State
+				var event go_fsm.Event
 				// get current state from eventCtx
-				event := go_fsm.EventFromCtx(eventCtx)
+				if event, err = go_fsm.EventFromCtx(eventCtx); err != nil {
+					return
+				}
 
 				// get current state from fsmContext
-				state := go_fsm.StateFromCtx(fsmCtx)
+				if state, err = go_fsm.StateFromCtx(fsmCtx); err != nil {
+					return
+				}
 
 				switch event {
 				case "moveRight":
@@ -88,11 +94,17 @@ func main() {
 		When(
 			stateInAction,
 			func(eventCtx go_fsm.EventContext, fsmCtx go_fsm.FsmContext) (next go_fsm.State, nextFsmCtx go_fsm.FsmContext, err error) {
+				var state go_fsm.State
+				var event go_fsm.Event
 				// get current state from eventCtx
-				event := go_fsm.EventFromCtx(eventCtx)
+				if event, err = go_fsm.EventFromCtx(eventCtx); err != nil {
+					return
+				}
 
-				// get current state from fsmContext it must been always but if not then function will return UnknownState constant
-				state := go_fsm.StateFromCtx(fsmCtx)
+				// get current state from fsmContext
+				if state, err = go_fsm.StateFromCtx(fsmCtx); err != nil {
+					return
+				}
 
 				switch event {
 				case "stop":
@@ -187,15 +199,15 @@ func main() {
 		log.Println("This will be an error:", err)
 	}
 }
+
 ```
 
 Benchmark
 ---------
 ```
-BenchmarkFsm_When/Transition_Permitted-8                                 	   22755	    112706 ns/op	     112 B/op	       5 allocs/op
-BenchmarkFsm_When/Transition_Denied-8                                   	 3991654	       300 ns/op	     128 B/op	       6 allocs/op
-BenchmarkFsm_When/Transition_with_post_transition_functions_run-8         	   21922	    116563 ns/op	     112 B/op	       5 allocs/op
-BenchmarkFsm_Close/Close_fsm_and_try_to_process_event-8                   	11097075	       103 ns/op	      32 B/op	       2 allocs/op
+Transition_Permitted-8                                   	   10000	    129269 ns/op	     176 B/op	       7 allocs/op
+Transition_Denied-8                                        	 2450037	       470 ns/op	     192 B/op	       8 allocs/op
+Transition_with_post_transition_functions_run-8         	   10000	    131176 ns/op	     176 B/op	       7 allocs/op
 ```
 -------------
 made with love in GO :)
