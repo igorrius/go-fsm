@@ -86,13 +86,12 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 	// get action function for this state
 	f, ok := fsm.actionMap[fsm.state]
 	if !ok || f == nil {
-		fsm.logger.Logf("Event [%s] for State [%s] processing failed", event, fsm.state)
+		fsm.logger.Logf("For event [%s] state [%s] action function is not defined", event, fsm.state)
 		return ErrActionNotFound
 	}
 
 	// check fsm and event contexts for error before the action call
 	if err := checkErrors(fsm.ctx.Err(), eventCtx.Err()); err != nil {
-		fsm.logger.Log("Before the action call contexts error: ", err.Error())
 		return err
 	}
 
@@ -100,7 +99,6 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 	fsmCtx := ctxWithState(fsm.ctx, fsm.state)
 	nextState, nextCtx, err := f(eventCtx, fsmCtx)
 	if err != nil {
-		fsm.logger.Logf("State [%s] action func error: %s", fsm.state, err.Error())
 		return err
 	}
 
@@ -111,7 +109,6 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 
 	// check fsm, nextFsm and event contexts for error after the action call
 	if err := checkErrors(eventCtx.Err(), fsmCtx.Err(), nextCtx.Err()); err != nil {
-		fsm.logger.Log("After the action call contexts error: ", err.Error())
 		return err
 	}
 
