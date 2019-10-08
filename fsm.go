@@ -92,6 +92,7 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 
 	// check fsm and event contexts for error before the action call
 	if err := checkErrors(fsm.ctx.Err(), eventCtx.Err()); err != nil {
+		fsm.logger.Log("Before the action call contexts error: ", err.Error())
 		return err
 	}
 
@@ -99,6 +100,7 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 	fsmCtx := ctxWithState(fsm.ctx, fsm.state)
 	nextState, nextCtx, err := f(eventCtx, fsmCtx)
 	if err != nil {
+		fsm.logger.Logf("State [%s] action func error: %s", fsm.state, err.Error())
 		return err
 	}
 
@@ -109,6 +111,7 @@ func (fsm *Fsm) ProcessEvent(event Event, eventCtx EventContext) error {
 
 	// check fsm, nextFsm and event contexts for error after the action call
 	if err := checkErrors(eventCtx.Err(), fsmCtx.Err(), nextCtx.Err()); err != nil {
+		fsm.logger.Log("After the action call contexts error: ", err.Error())
 		return err
 	}
 
@@ -181,7 +184,7 @@ func (fsm *Fsm) processTransitionFunctions(wg *sync.WaitGroup, nextState State, 
 	for _, fn := range transitionFunctions {
 		go func(from, to State, ctx FsmContext, f TransitionFunc) {
 			if err := f(from, to, ctx); err != nil {
-				fsm.logger.Logf("Transition function from state [%s] to state [%s] call error [%s]",
+				fsm.logger.Logf("Post transition function state [%s]->[%s] call error [%s]",
 					from,
 					to,
 					err.Error(),
