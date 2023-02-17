@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/igorrius/go-fsm)](https://goreportcard.com/report/github.com/igorrius/go-fsm)
+
 # go-fsm
 Finite State Machine in Go (with Blackjack and... using context)
 
